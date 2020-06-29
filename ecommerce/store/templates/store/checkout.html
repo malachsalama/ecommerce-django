@@ -21,11 +21,11 @@
                         <input required class="form-control" type="text" name="county" placeholder="County...">
                     </div>
                     <div class="form-field">
-                        <input required class="form-control" type="text" name="court-number"
+                        <input required class="form-control" type="text" name="court_number"
                                placeholder="Court Number...">
                     </div>
                     <div class="form-fieldpython manage.py">
-                        <input required class="form-control" type="text" name="house-number"
+                        <input required class="form-control" type="text" name="house_number"
                                placeholder="House Number...">
                     </div>
                 </div>
@@ -64,6 +64,7 @@
 
 <script type="text/javascript">
     var shipping = '{{ order.shipping }}'
+    var total = '{{order.get_cart_total}}'
 
     if(shipping == 'False'){
         document.getElementById('shipping-info').innerHTML = ''
@@ -95,6 +96,42 @@
 
     function submitFormData(){
         console.log('Payment button clicked...')
+
+        var userFormData = {
+            'name': null,
+            'email': null,
+            'total': total,
+        }
+        var shippingInfo = {
+            'county': null,
+            'court_number': null,
+            'house_number': null,
+        }
+        if(shipping != 'False'){
+            shippingInfo.county = form.county.value
+            shippingInfo.court_number = form.court_number.value
+            shippingInfo.house_number = form.house_number.value
+        }
+        if(user == 'AnonymousUser'){
+            userFormData.name = form.name.value
+            userFormData.email = form.email.value
+        }
+
+        var url = '/process_order/'
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body:JSON.stringify({'form': userFormData, 'shipping': shippingInfo})
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log('Success:', data);
+            alert('Transaction completed');
+            window.location.href = "{% url 'store' %}"
+        })
     }
 
 </script>
